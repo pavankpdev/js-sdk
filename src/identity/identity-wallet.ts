@@ -755,8 +755,14 @@ export class IdentityWallet implements IIdentityWallet {
     );
 
     const keyIdEth = await this._kms.createKeyFromSeed(KmsKeyType.Secp256k1, opts.seed);
+    console.log({keyIdEth});
+    
     const pubKeyHexEth = (await this._kms.publicKey(keyIdEth)).slice(2); // 04 + x + y (uncompressed key)
+    console.log({pubKeyHexEth});
+
     const did = buildDIDFromEthPubKey(didType, pubKeyHexEth);
+    console.log({did});
+
 
     await this._storage.mt.createIdentityMerkleTrees(did.string());
 
@@ -1010,8 +1016,10 @@ export class IdentityWallet implements IIdentityWallet {
 
     try {
       credential = this._credentialWallet.createCredential(issuerDID, req, jsonSchema);
+      
 
       const encodedCred = byteEncoder.encode(JSON.stringify(credential));
+
       const encodedSchema = byteEncoder.encode(JSON.stringify(schema));
 
       await new JsonSchemaValidator().validate(encodedCred, encodedSchema);
@@ -1365,7 +1373,7 @@ export class IdentityWallet implements IIdentityWallet {
     const claimsRoot = await newTreeModel.claimsTree.root();
     const rootOfRoots = await newTreeModel.rootsTree.root();
     const revocationRoot = await newTreeModel.revocationTree.root();
-
+    
     const newTreeState: TreeState = {
       revocationRoot,
       claimsRoot,
@@ -1377,6 +1385,8 @@ export class IdentityWallet implements IIdentityWallet {
 
     let proof;
     const isEthIdentity = isEthereumIdentity(did); // don't generate proof for ethereum identities
+    console.log({isEthIdentity});
+    
 
     let txId;
     if (!isEthIdentity) {
@@ -1417,6 +1427,8 @@ export class IdentityWallet implements IIdentityWallet {
 
       txId = await this._storage.states.publishState(proof, ethSigner);
     } else {
+      console.log({signer: await ethSigner.getAddress()});
+      
       const oldUserState = oldTreeState.state;
       const newUserState = newTreeState.state;
       const userStateTransitionInfo: UserStateTransitionInfo = {
@@ -1427,6 +1439,9 @@ export class IdentityWallet implements IIdentityWallet {
         methodId: BigInt(1),
         methodParams: '0x'
       } as UserStateTransitionInfo;
+
+      console.log(oldUserState, newUserState);
+      
       txId = await this._storage.states.publishStateGeneric(ethSigner, userStateTransitionInfo);
     }
     await this.updateIdentityState(did, true, newTreeState);
@@ -1523,6 +1538,8 @@ export class IdentityWallet implements IIdentityWallet {
     let attempt = 2;
     do {
       try {
+        console.log(did, oldTreeState, isOldStateGenesis, ethSigner, prover);
+        
         txId = await this.transitState(did, oldTreeState, isOldStateGenesis, ethSigner, prover);
         break;
       } catch (err) {

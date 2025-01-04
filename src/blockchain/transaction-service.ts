@@ -81,6 +81,8 @@ export class TransactionService implements ITransactionService {
     signer: Signer,
     request: TransactionRequest
   ): Promise<{ txnHash: string; txnReceipt: TransactionReceipt }> {
+    console.log({signerssssssssss: signer});
+    
     const tx = await signer.sendTransaction(request);
     const txnReceipt = await tx.wait();
     if (!txnReceipt) {
