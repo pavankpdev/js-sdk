@@ -28,7 +28,7 @@ export const getInMemoryDataStorage = (states: IStateStorage) => {
       new InMemoryDataSource<Identity>(),
       new InMemoryDataSource<Profile>()
     ),
-    mt: new InMemoryMerkleTreeStorage(40),
+    mt: new InMemoryMerkleTreeStorage(40), 
     states
   };
 };
